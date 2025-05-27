@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 using namespace std;
 class Contact{
     private:
@@ -9,11 +10,8 @@ class Contact{
         string address;
     public:
         // Default constructor
-        Contact(string n, string p) : name(n), phoneNumber(p), email(""), address("") {}
-        //parameterrized constructor with all fields
-        Contact(string n, string p, string e, string a) : name(n), phoneNumber(p), email(e), address(a) {}
-        //parameterized constructor with email and not address
-        Contact(string n, string p, string e) : name(n), phoneNumber(p), email(e), address("") {}
+        Contact(string n, string p, string e = "", string a = "") : name(n), phoneNumber(p), email(e), address(a) {}
+        
 
         // Getter methods
         string getName() {return name;}
@@ -50,16 +48,49 @@ class Contact{
         }
 
 };
+// Save contacts to a file
+void saveContacts(vector<Contact> &contacts) {
+    ofstream outfile("contacts.txt");
+    for(Contact &c : contacts) {
+        outfile << c.getName() << "\n"
+                << c.getNumber() << "\n"
+                << c.getEmail() << "\n"
+                << c.getAddress() << "\n"
+                << "---\n"; // Separator for each contact
+
+    }
+    outfile.close();
+}
+
+// Load contacts from a file
+void loadContacts(vector<Contact> &contacts) {
+    ifstream infile("contacts.txt");
+    string name, phoneNumber, email, address, seprator;
+    while(getline(infile, name)) {
+        getline(infile, phoneNumber);
+        getline(infile, email);
+        getline(infile, address);
+        getline(infile, seprator);
+        if(email.empty() && address.empty()) {
+            contacts.push_back(Contact(name, phoneNumber));
+        } else if(!email.empty() && address.empty()) {
+            contacts.push_back(Contact(name, phoneNumber, email));
+        } else {
+            contacts.push_back(Contact(name, phoneNumber, email, address));
+        }
+
+    }
+    infile.close();
+
+}
 int main() {
     cout << "Hello, World!\n";
     vector<Contact> contacts;
-    contacts.push_back(Contact("Alice", "9714043692"));
-    contacts.push_back(Contact("Bob", "123234566654"));
-    for(Contact &c: contacts) {
-        c.displayContact();
-        cout << &c << endl;
-        cout << "------------------------" << endl;
-    }
+    contacts.push_back(Contact("Test1", "9714043692", "test1email@email.com"));
+    contacts.push_back(Contact("Test2", "123234566654"));
+    
+    // Load contacts from file if it exists
+    loadContacts(contacts);
 
     // Menu for user interaction
     int choice = -1;
@@ -182,7 +213,9 @@ int main() {
             cout << "Invalid choice. Please try again.\n";
         }
     }
-    
+    // Save contacts to file before exiting
+    saveContacts(contacts);
+    cout << "Contacts saved to file.\n";
 
 
     return 0;
